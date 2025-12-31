@@ -10,11 +10,11 @@ const protect = async (req, res, next) => {
   ) {
     try {
       //get the token
-      token = req.headers.authorization.split("")[1];
+      token = req.headers.authorization.split(" ")[1];
       //verify token
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       //get user from token
-      req.user = await User.findbyId(decoded.id).select("-password");
+      req.user = await User.findById(decoded.id).select("-password");
       return next();
     } catch (error) {
       console.error("JWT ERROR:", error.message);
