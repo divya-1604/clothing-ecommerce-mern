@@ -4,4 +4,9 @@ const{createCategory,getAllCategories,getSubCategories}=require("../controllers/
 const { protect } = require("../middlewares/authMiddleware");
 const { adminProtect } = require("../middlewares/adminMiddleware");
 
+router.post("/",protect,adminProtect,createCategory);   
+router.get("/",getAllCategories);
+router.get("/subcategories/:parentId",getSubCategories);
+
+module.exports=router;
 
