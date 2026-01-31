@@ -14,13 +14,13 @@ exports.createCategory = async (req, res) => {
         .status(400)
         .json({ message: "Category with the same name already exists" });
     }
-    const Category = await Category.create({
+    const categories = await Category.create({
       name,
       parent: parent || null,
     });
     res
       .status(201)
-      .json({ message: "Category created successfully", Category });
+      .json({ message: "Category created successfully", categories });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
