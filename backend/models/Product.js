@@ -1,73 +1,86 @@
-const mongoose=require("mongoose");
+const mongoose = require("mongoose");
+const slugify = require("slugify");
 
-const productSchema=mongoose.Schema({
-    name:{
-        type:String,
-        required:true,
+const productSchema = mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: true,
     },
     slug: {
-        type: String,
-        required: true,
-        unique: true,
-      },
-    description:{
-        type:String,
-        required:true,
+      type: String,
+      required: true,
+      unique: true,
+      lowercasw: true,
+      index: true,
     },
-    price:{
-        type:Number,
-        required:true,
+    description: {
+      type: String,
+      required: true,
     },
-    category:{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:"Category",
-        required:true,
+    price: {
+      type: Number,
+      required: true,
     },
-    sizes:{
-        type:[String],
-        default:[],
+    category: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Category",
+      required: true,
     },
-    colors:{
-        type:[String],
-        default:[],
+    sizes: {
+      type: [String],
+      default: [],
+    },
+    colors: {
+      type: [String],
+      default: [],
     },
     gender: {
-        type: String,
-        enum: ["Men", "Women", "Kids"],
-      },
-    brand:{
-        type:String,
-        required:true,
+      type: String,
+      enum: ["Men", "Women", "Kids"],
     },
-    countInStock:{
-        type:Number,
-        default:0,
+    brand: {
+      type: String,
+      required: true,
     },
-    rating:{
-        type:Number,
-        default:0,
+    countInStock: {
+      type: Number,
+      default: 0,
     },
-    numReviews:{
-        type:Number,
-        default:0,
+    rating: {
+      type: Number,
+      default: 0,
     },
-    images:{
-        type:[String],
-        default:[],
+    numReviews: {
+      type: Number,
+      default: 0,
     },
-    createdBy:{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:"User",
-        required:true,
-    }
-}, { timestamps: true })
-productSchema.pre("save", function (next) {
-    if (this.isModified("name")) {
-      this.slug = this.name
-        .toLowerCase()
-        .replace(/ /g, "-")
-        .replace(/[^\w-]+/g, "");
-    }
-    next();
-  });
-module.exports=mongoose.model("Product",productSchema);
+    images: {
+      type: [String],
+      default: [],
+    },
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+  },
+  { timestamps: true },
+);
+// productSchema.pre("save", function (next) {
+//     if (this.isModified("name")) {
+//       this.slug = this.name
+//         .toLowerCase()
+//         .replace(/ /g, "-")
+//         .replace(/[^\w-]+/g, "");
+//     }
+//     next();
+//   });
+
+productSchema.pre("validate", function () {
+  if (this.name && !this.slug) {
+    this.slug = slugify(this.name, { lower: true });
+  }
+});
+
+module.exports = mongoose.model("Product", productSchema);
