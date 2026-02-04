@@ -13,10 +13,60 @@ exports.createProduct = async (req, res) => {
   }
 };
 exports.getAllProducts = async (req, res) => {
-  const products = await Product.find()
-    .populate("category", "name")
-    .populate("createdBy", "name email");
-  res.json(products);
+  try {
+    const pageSize = 10;
+    const page = Number(req.query.page) || 1;
+    let searchKeyword = req.query.keyword || "";
+    if (searchKeyword.endsWith("s")) {
+      searchKeyword = searchKeyword.slice(0, -1);
+    }
+    const keyword = searchKeyword
+      ? {
+          name: {
+            $regex: searchKeyword,
+            $options: "i",
+          },
+        }
+      : {};
+
+    const categoryFilter = req.query.category
+      ? { category: req.query.category }
+      : {};
+
+    const priceFilter = {
+      price: {
+        $gte: Number(req.query.minPrice) || 0,
+        $lte: Number(req.query.maxPrice) || 100000,
+      },
+    };
+    const sortOption =
+      req.query.sort === "price"
+        ? { price: 1 }
+        : req.query.sort === "-price"
+          ? { price: -1 }
+          : { createdAt: -1 };
+    const filter = {
+      ...keyword,
+      ...categoryFilter,
+      ...priceFilter,
+    };
+
+    const count = await Product.countDocuments(filter);
+    const products = await Product.find(filter)
+      .sort(sortOption)
+      .populate("category", "name")
+      .limit(pageSize)
+      .skip(pageSize * (page - 1));
+    // .populate("createdBy", "name email");
+    res.json({
+      products,
+      page,
+      pages: Math.ceil(count / pageSize),
+      totalProducts: count,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 };
 
 exports.getProductsBySlug = async (req, res) => {
