@@ -11,7 +11,7 @@ const productSchema = mongoose.Schema(
       type: String,
       required: true,
       unique: true,
-      lowercasw: true,
+      lowercase: true,
       index: true,
     },
     description: {
@@ -55,6 +55,7 @@ const productSchema = mongoose.Schema(
       type: Number,
       default: 0,
     },
+    reviews: [reviewSchema],
     images: {
       type: [String],
       default: [],
@@ -77,10 +78,32 @@ const productSchema = mongoose.Schema(
 //     next();
 //   });
 
+const reviewSchema = mongoose.Schema(
+  {
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    name: {
+      type: String,
+      required: true,
+    },
+    rating: {
+      type: Number,
+      required: true,
+    },
+    comment: {
+      type: String,
+      required: true,
+    },
+  },
+  { timestamps: true },
+);
+
 productSchema.pre("validate", function () {
   if (this.name && !this.slug) {
     this.slug = slugify(this.name, { lower: true });
   }
 });
-
 module.exports = mongoose.model("Product", productSchema);
