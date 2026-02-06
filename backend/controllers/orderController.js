@@ -41,3 +41,26 @@ exports.getMyOrders = async (req, res) => {
   const orders = await Order.find({ user: req.user._id });
   res.json(orders);
 };
+
+exports.getAllOrders = async (req, res) => {
+  const orders = await Order.find()
+    .populate("user", "name email")
+    .sort({ createdAt: -1 });
+
+  res.json(orders);
+};
+
+exports.updateOrderStatus = async (req, res) => {
+  const order = await order.findById(req.params.id);
+  if (!order) return res.status(404).json({ message: "order not found" });
+
+  order.orderStatus = req.body.status || order.orderStatus;
+
+  if (order.orderStatus === "Delivered") {
+    order.isPaid = true;
+    order.paidAt = Date.now();
+  }
+
+  const updatedOrder = await order.save();
+  res.json(updatedOrder);
+};
