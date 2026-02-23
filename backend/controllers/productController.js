@@ -2,9 +2,33 @@ const Product = require("../models/Product");
 
 exports.createProduct = async (req, res) => {
   try {
+    if (!req.file) {
+      return res.status(400).json({ message: "Image is required" });
+    }
+    const streamUpload = (buffer) => {
+      return new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          { folder: "clothing-ecommerce" },
+          (error, result) => {
+            if (result) resolve(result);
+            else reject(error);
+          },
+        );
+        stream.end(buffer);
+      });
+    };
+
+    const result = await streamUpload(req.file.buffer);
+
     const product = Product({
       ...req.body,
       createdBy: req.user._id,
+      images: [
+        {
+          url: result.secure_url,
+          public_id: result.public_id,
+        },
+      ],
     });
     const createdProduct = await product.save();
     res.status(201).json(createdProduct);
@@ -43,8 +67,8 @@ exports.getAllProducts = async (req, res) => {
       req.query.sort === "price"
         ? { price: 1 }
         : req.query.sort === "-price"
-        ? { price: -1 }
-        : { createdAt: -1 };
+          ? { price: -1 }
+          : { createdAt: -1 };
     const filter = {
       ...keyword,
       ...categoryFilter,
@@ -72,7 +96,7 @@ exports.getAllProducts = async (req, res) => {
 exports.getProductsBySlug = async (req, res) => {
   const product = await Product.findOne({ slug: req.params.slug }).populate(
     "category",
-    "name"
+    "name",
   );
 
   if (!product) return res.status(404).json({ message: "Product not found" });
@@ -86,7 +110,7 @@ exports.createProductReview = async (req, res) => {
     const product = await Product.findById(req.params.is);
     if (!product) return res.status(404).json({ message: "Product Not found" });
     const alreadyreviewd = product.reviews.find(
-      (r) => r.user.toString() === req.user._id.toString()
+      (r) => r.user.toString() === req.user._id.toString(),
     );
     if (alreadyreviewd)
       return res.status(400).json({ message: "Product already reviewed" });
@@ -119,7 +143,7 @@ exports.deleteProductReview = async (req, res) => {
     if (!product) return res.status(404).json({ message: "Product Not found" });
     //find the review index in the product reviews array
     const reviewIndex = product.reviews.findIndex(
-      (r) => r._id.toString() === reviewId
+      (r) => r._id.toString() === reviewId,
     );
     //if the review is not found return 404
     if (reviewIndex === -1)

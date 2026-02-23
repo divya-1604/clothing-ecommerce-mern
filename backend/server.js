@@ -21,7 +21,7 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/orders", orderRoutes);
-app.use("/api/test-upload", uploadRoutes);
+app.use("/api/upload", uploadRoutes);
 
 const cloudinary = require("./utils/cloudinary");
 

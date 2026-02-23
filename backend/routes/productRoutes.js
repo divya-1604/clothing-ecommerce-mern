@@ -5,10 +5,10 @@ const {
   getProductsBySlug,
   createProductReview,
 } = require("../controllers/productController");
-const { protect } = require("../middlewares/authMiddleware");
+const { protect, adminProtect } = require("../middlewares/authMiddleware");
 const router = express.Router();
 
-router.post("/", protect, createProduct);
+router.post("/", protect, adminProtect, upload.single("image"), createProduct);
 router.get("/", getAllProducts);
 router.get("/:slug", getProductsBySlug);
 router.post("/:id/reviews", protect, createProductReview);
